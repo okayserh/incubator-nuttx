@@ -79,7 +79,7 @@ void stm32_boardinitialize(void)
 #endif
 
 #ifdef CONFIG_STM32F7_FMC
-  stm32_enablefmc();
+  //  stm32_enablefmc();
 #endif
 }
 

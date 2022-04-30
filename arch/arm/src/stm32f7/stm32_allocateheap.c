@@ -316,6 +316,12 @@ void up_allocate_heap(FAR void **heap_start, size_t *heap_size)
   *heap_start = (FAR void *)g_idle_topstack;
   *heap_size  = SRAM1_END - g_idle_topstack;
 
+  // [OKH] Quick fix. Note -> this leads to a messed up memory map, where multiple allocations
+  // in the same region are possible.
+  //  *heap_size  = SRAM1_END - g_idle_topstack;
+  *heap_size  = 0xC0100000 - g_idle_topstack;
+
+  
   /* Colorize the heap for debug */
 
   up_heap_color(*heap_start, *heap_size);
