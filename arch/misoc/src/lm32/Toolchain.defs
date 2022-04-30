@@ -32,13 +32,7 @@ ifeq ($(filter y, \
 endif
 
 ifeq ($(filter y, \
-      $(CONFIG_LM32_TOOLCHAIN_GNUL) \
-    ),y)
-  CONFIG_LM32_TOOLCHAIN ?= GNU
-endif
-
-ifeq ($(filter y, \
-      $(CONFIG_LM32_TOOLCHAIN_GNUW) \
+      $(CONFIG_LM32_TOOLCHAIN_GNU) \
     ),y)
   CONFIG_LM32_TOOLCHAIN ?= GNU
 endif
@@ -59,6 +53,22 @@ ifeq ($(CONFIG_DEBUG_CUSTOMOPT),y)
   MAXOPTIMIZATION := $(CONFIG_DEBUG_OPTLEVEL)
 else
   MAXOPTIMIZATION ?= -Os
+endif
+
+ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
+  LDFLAGS         += -g
+  MAXOPTIMIZATION += -g
+endif
+
+ARCHCFLAGS += -fno-common
+ARCHCXXFLAGS += -fno-common -nostdinc++
+
+ifneq ($(CONFIG_CXX_EXCEPTION),y)
+  ARCHCXXFLAGS += -fno-exceptions -fcheck-new
+endif
+
+ifneq ($(CONFIG_CXX_RTTI),y)
+  ARCHCXXFLAGS += -fno-rtti
 endif
 
 # NuttX buildroot under Linux or Cygwin

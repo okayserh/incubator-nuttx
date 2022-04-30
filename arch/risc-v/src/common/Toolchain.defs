@@ -27,11 +27,7 @@
 # command-line selection.
 #
 
-ifeq ($(filter y, $(CONFIG_RISCV_TOOLCHAIN_GNU_RVGL)),y)
-  CONFIG_RISCV_TOOLCHAIN ?= GNU_RVG
-endif
-
-ifeq ($(filter y, $(CONFIG_RISCV_TOOLCHAIN_GNU_RVGW)),y)
+ifeq ($(filter y, $(CONFIG_RISCV_TOOLCHAIN_GNU_RVG)),y)
   CONFIG_RISCV_TOOLCHAIN ?= GNU_RVG
 endif
 
@@ -59,8 +55,8 @@ else
   MAXOPTIMIZATION += -fomit-frame-pointer
 endif
 
-ARCHCFLAGS =
-ARCHCXXFLAGS =
+ARCHCFLAGS += -fno-common
+ARCHCXXFLAGS += -fno-common -nostdinc++
 
 ifneq ($(CONFIG_CXX_EXCEPTION),y)
   ARCHCXXFLAGS += -fno-exceptions -fcheck-new
@@ -68,6 +64,24 @@ endif
 
 ifneq ($(CONFIG_CXX_RTTI),y)
   ARCHCXXFLAGS += -fno-rtti
+endif
+
+# Optimization of unused sections
+
+ifeq ($(CONFIG_DEBUG_OPT_UNUSED_SECTIONS),y)
+  LDFLAGS         += --gc-sections
+  MAXOPTIMIZATION += -ffunction-sections -fdata-sections
+endif
+
+# Debug link map
+
+ifeq ($(CONFIG_DEBUG_LINK_MAP),y)
+  LDFLAGS += --cref -Map=$(call CONVERT_PATH,$(TOPDIR)$(DELIM)nuttx.map)
+endif
+
+ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
+  LDFLAGS         += -g
+  MAXOPTIMIZATION += -g
 endif
 
 # Generic GNU RVG toolchain
@@ -132,15 +146,29 @@ endif
 
 # Default toolchain
 
-CC = $(CROSSDEV)gcc
-CXX = $(CROSSDEV)g++
-CPP = $(CROSSDEV)gcc -E -P -x c
-LD = $(CROSSDEV)ld
-STRIP = $(CROSSDEV)strip --strip-unneeded
-AR = $(CROSSDEV)ar rcs
-NM = $(CROSSDEV)nm
+CC      = $(CROSSDEV)gcc
+CXX     = $(CROSSDEV)g++
+CPP     = $(CROSSDEV)gcc -E -P -x c
+STRIP   = $(CROSSDEV)strip --strip-unneeded
 OBJCOPY = $(CROSSDEV)objcopy
 OBJDUMP = $(CROSSDEV)objdump
+LD      = $(CROSSDEV)ld
+AR      = $(CROSSDEV)ar rcs
+NM      = $(CROSSDEV)nm
+
+# Link Time Optimization
+
+ifeq ($(CONFIG_LTO_FULL),y)
+  MAXOPTIMIZATION += -flto
+  ifeq ($(CONFIG_RISCV_TOOLCHAIN),GNU_RVG)
+    LD := $(CROSSDEV)gcc
+    AR := $(CROSSDEV)gcc-ar rcs
+    NM := $(CROSSDEV)gcc-nm
+    MAXOPTIMIZATION += -fuse-linker-plugin
+    MAXOPTIMIZATION += -fno-builtin
+    MAXOPTIMIZATION += -nodefaultlibs
+  endif
+endif
 
 # Add the builtin library
 

@@ -80,14 +80,23 @@ else ifeq ($(CONFIG_ARCH_CHIP_AT90USB1287),y)
 else ifeq ($(CONFIG_ARCH_CHIP_ATMEGA2560),y)
   ARCHCPUFLAGS += -mmcu=atmega2560
   LDFLAGS += -mavr6
-else
-  $(error "No valid CONFIG_ARCH_CHIP_ set in the configuration")
 endif
 
 ifeq ($(CONFIG_DEBUG_CUSTOMOPT),y)
   MAXOPTIMIZATION := $(CONFIG_DEBUG_OPTLEVEL)
 else
   MAXOPTIMIZATION ?= -O2
+endif
+
+ARCHCFLAGS += -fno-common
+ARCHCXXFLAGS += -fno-common -nostdinc++
+
+ifneq ($(CONFIG_CXX_EXCEPTION),y)
+  ARCHCXXFLAGS += -fno-exceptions -fcheck-new
+endif
+
+ifneq ($(CONFIG_CXX_RTTI),y)
+  ARCHCXXFLAGS += -fno-rtti
 endif
 
 # NuttX buildroot GCC toolchain under Linux or Cygwin
