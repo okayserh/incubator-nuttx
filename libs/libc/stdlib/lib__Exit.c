@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/armv7-a/arm_addrenv_perms.c
+ * libs/libc/stdlib/lib__Exit.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,43 +22,14 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
-#include <nuttx/arch.h>
-#include <nuttx/compiler.h>
-
-#include <sys/mman.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
-/****************************************************************************
- * Name: up_addrenv_mprot
- *
- * Description:
- *   Modify access rights to an address range.
- *
- * Input Parameters:
- *   addrenv - The address environment to be modified.
- *   addr - Base address of the region.
- *   len - Size of the region.
- *   prot - Access right flags.
- *
- * Returned Value:
- *   Zero (OK) on success; a negated errno value on failure.
- *
- ****************************************************************************/
-
-int up_addrenv_mprot(group_addrenv_t *addrenv, uintptr_t addr, size_t len,
-                     int prot)
+void _Exit(int status)
 {
-  /* Nothing needs to be done */
-
-  UNUSED(addrenv);
-  UNUSED(addr);
-  UNUSED(len);
-  UNUSED(prot);
-
-  return OK;
+  _exit(status);
 }

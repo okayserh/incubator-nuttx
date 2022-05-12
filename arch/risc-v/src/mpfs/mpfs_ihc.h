@@ -1,5 +1,5 @@
 /****************************************************************************
- * libs/libc/stdlib/lib_Exit.c
+ * arch/risc-v/src/mpfs/mpfs_ihc.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,18 +18,57 @@
  *
  ****************************************************************************/
 
+#ifndef __ARCH_RISCV_SRC_MPFS_MPFS_IHC_H
+#define __ARCH_RISCV_SRC_MPFS_MPFS_IHC_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
-#include <stdlib.h>
-#include <unistd.h>
+#include <nuttx/config.h>
+#include <sys/types.h>
+#include <stdbool.h>
+
+#include "chip.h"
 
 /****************************************************************************
- * Public Functions
+ * Public Function Prototypes
  ****************************************************************************/
 
-void _Exit(int status)
+#ifndef __ASSEMBLY__
+
+#undef EXTERN
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C"
 {
-  _exit(status);
+#else
+#define EXTERN extern
+#endif
+
+/****************************************************************************
+ * Name: mpfs_ihc_init
+ *
+ * Description:
+ *   This initializes the Inter-Hart Communication (IHC) module.  Rptun is
+ *   used to simplify the integration of rpmsg and virtio.  This function
+ *   installs the proper interrupt handlers, installs a thread, and performs
+ *   all the required initialization tasks.
+ *
+ * Input Parameters:
+ *   None
+ *
+ * Returned Value:
+ *   OK on success, a nagated errno on error
+ *
+ ****************************************************************************/
+
+int mpfs_ihc_init(void);
+
+#undef EXTERN
+#if defined(__cplusplus)
 }
+#endif
+
+#endif /* __ASSEMBLY__ */
+#endif /* __ARCH_RISCV_SRC_MPFS_MPFS_IHC_H */

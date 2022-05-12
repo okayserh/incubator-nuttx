@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/nuttx/crypto/crypto.h
+ * boards/risc-v/mpfs/common/src/mpfs_ihc.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,74 +18,45 @@
  *
  ****************************************************************************/
 
-#ifndef __INCLUDE_NUTTX_CRYPTO_CRYPTO_H
-#define __INCLUDE_NUTTX_CRYPTO_CRYPTO_H
-
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-#include <stdint.h>
+#include <debug.h>
+#include <errno.h>
+
+#include "mpfs_ihc.h"
+#include "board_config.h"
 
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Functions
  ****************************************************************************/
-
-#if defined(CONFIG_CRYPTO_AES)
-#  define AES_MODE_MIN 1
-
-#  define AES_MODE_ECB 1
-#  define AES_MODE_CBC 2
-#  define AES_MODE_CTR 3
-#  define AES_MODE_CFB 4
-
-#  define AES_MODE_MAX 4
-
-#  define AES_MODE_MAC 0x80000000
-
-#  define AES_MODE_MASK 0xffff
-#endif
-
-#define CYPHER_ENCRYPT 1
-#define CYPHER_DECRYPT 0
 
 /****************************************************************************
- * Public Data
+ * Name: mpfs_board_ihc_init
+ *
+ * Description:
+ *   Starts the Inter-Hart Communication (IHC) driver.
+ *
+ * Returned Value:
+ *   Zero (OK) is returned on success; A negated errno value is returned
+ *   to indicate any failure.
+ *
  ****************************************************************************/
 
-#ifndef __ASSEMBLY__
-
-#undef EXTERN
-#if defined(__cplusplus)
-#define EXTERN extern "C"
-extern "C"
+int mpfs_board_ihc_init(void)
 {
-#else
-#define EXTERN extern
-#endif
+  int ret;
 
-/****************************************************************************
- * Public Function Prototypes
- ****************************************************************************/
+  ret = mpfs_ihc_init();
 
-int up_cryptoinitialize(void);
+  if (ret != OK)
+    {
+      syslog(LOG_ERR, "ERROR: Failed to initialize the IHC driver: %d\n",
+             ret);
+    }
 
-#if defined(CONFIG_CRYPTO_AES)
-int aes_cypher(FAR void *out, FAR const void *in, size_t size,
-               FAR const void *iv, FAR const void *key, size_t keysize,
-               int mode, int encrypt);
-#endif
-
-#if defined(CONFIG_CRYPTO_ALGTEST)
-int crypto_test(void);
-#endif
-
-#undef EXTERN
-#if defined(__cplusplus)
+  return ret;
 }
-#endif
-
-#endif /* __ASSEMBLY__ */
-#endif /* __INCLUDE_NUTTX_CRYPTO_CRYPTO_H */
