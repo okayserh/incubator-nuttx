@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/x86_64/src/common/up_interruptcontext.c
+ * boards/arm/stm32/nucleo-f4x1re/src/stm32_lcd_ssd1306.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,18 +24,25 @@
 
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
+#include <debug.h>
 
-#include "up_internal.h"
+#include <nuttx/board.h>
+#include <nuttx/lcd/lcd.h>
+#include <nuttx/lcd/ssd1306.h>
+
+#include "stm32.h"
+#include "nucleo-f4x1re.h"
+
+#include "stm32_ssd1306.h"
 
 /****************************************************************************
- * Private Types
+ * Pre-processor Definitions
  ****************************************************************************/
 
+#define OLED_SPI_PORT         1 /* OLED display connected to SPI1 */
+
 /****************************************************************************
- * Private Function Prototypes
+ * Private Data
  ****************************************************************************/
 
 /****************************************************************************
@@ -43,15 +50,37 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_interrupt_context
- *
- * Description:
- *   Return true is we are currently executing in the interrupt handler
- *   context.
- *
+ * Name: board_lcd_initialize
  ****************************************************************************/
 
-bool up_interrupt_context(void)
+int board_lcd_initialize(void)
 {
-  return g_current_regs != NULL;
+  int ret;
+
+  ret = board_ssd1306_initialize(OLED_SPI_PORT);
+  if (ret < 0)
+    {
+      lcderr("ERROR: Failed to initialize SSD1306\n");
+      return ret;
+    }
+
+  return OK;
+}
+
+/****************************************************************************
+ * Name: board_lcd_getdev
+ ****************************************************************************/
+
+struct lcd_dev_s *board_lcd_getdev(int devno)
+{
+  return board_ssd1306_getdev();
+}
+
+/****************************************************************************
+ * Name: board_lcd_uninitialize
+ ****************************************************************************/
+
+void board_lcd_uninitialize(void)
+{
+  /* TO-FIX */
 }

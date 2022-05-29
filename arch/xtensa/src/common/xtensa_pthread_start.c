@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/xtensa/src/common/xtensa_interruptcontext.c
+ * arch/xtensa/src/common/xtensa_pthread_start.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,35 +24,53 @@
 
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
+#include <assert.h>
+#include <pthread.h>
 
-#include "xtensa.h"
+#include <nuttx/arch.h>
+#include <arch/syscall.h>
+
+#if !defined(CONFIG_BUILD_FLAT) && defined(__KERNEL__) && \
+    !defined(CONFIG_DISABLE_PTHREAD)
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_interrupt_context
+ * Name: up_pthread_start
  *
- * Description:  Return true is we are currently executing in
- * the interrupt handler context on this CPU.
+ * Description:
+ *   In this kernel mode build, this function will be called to execute a
+ *   pthread in user-space.  When the pthread is first started, a kernel-mode
+ *   stub will first run to perform some housekeeping functions.  This
+ *   kernel-mode stub will then be called transfer control to the user-mode
+ *   pthread.
+ *
+ *   Normally the a user-mode start-up stub will also execute before the
+ *   pthread actually starts.  See libc/pthread/pthread_create.c
+ *
+ * Input Parameters:
+ *   startup - The user-space pthread startup function
+ *   entrypt - The user-space address of the pthread entry point
+ *   arg     - Standard argument for the pthread entry point
+ *
+ * Returned Value:
+ *   This function should not return.  It should call the user-mode start-up
+ *   stub and that stub should call pthread_exit if/when the user pthread
+ *   terminates.
  *
  ****************************************************************************/
 
-bool up_interrupt_context(void)
+void up_pthread_start(pthread_trampoline_t startup,
+                      pthread_startroutine_t entrypt, pthread_addr_t arg)
 {
-#ifdef CONFIG_SMP
-  irqstate_t flags = up_irq_save();
-#endif
+  /* Let sys_call3() do all of the work */
 
-  bool ret = CURRENT_REGS != NULL;
+  sys_call3(SYS_pthread_start, (uintptr_t)startup, (uintptr_t)entrypt,
+            (uintptr_t)arg);
 
-#ifdef CONFIG_SMP
-  up_irq_restore(flags);
-#endif
-
-  return ret;
+  PANIC();
 }
+
+#endif /* !CONFIG_BUILD_FLAT && __KERNEL__ && !CONFIG_DISABLE_PTHREAD */

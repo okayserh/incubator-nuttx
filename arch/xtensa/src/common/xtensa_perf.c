@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/renesas/src/common/up_interruptcontext.c
+ * arch/xtensa/src/common/xtensa_perf.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,34 +22,42 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
-#include <stdbool.h>
 #include <nuttx/arch.h>
-#include <nuttx/irq.h>
+#include <nuttx/clock.h>
 
-#include "up_internal.h"
-
-/****************************************************************************
- * Private Types
- ****************************************************************************/
+#include "xtensa_counter.h"
+#include "xtensa.h"
 
 /****************************************************************************
- * Private Function Prototypes
+ * Private Data
  ****************************************************************************/
+
+static uint32_t g_cpu_freq;
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
-/****************************************************************************
- * Name: up_interrupt_context
- *
- * Description: Return true is we are currently executing in
- * the interrupt handler context.
- ****************************************************************************/
-
-bool up_interrupt_context(void)
+void up_perf_init(void *arg)
 {
-  return g_current_regs != NULL;
+  g_cpu_freq = (uint32_t)(uintptr_t)arg;
+}
+
+uint32_t up_perf_getfreq(void)
+{
+  return g_cpu_freq;
+}
+
+uint32_t up_perf_gettime(void)
+{
+  return xtensa_getcount();
+}
+
+void up_perf_convert(uint32_t elapsed, struct timespec *ts)
+{
+  uint32_t left;
+
+  ts->tv_sec  = elapsed / g_cpu_freq;
+  left        = elapsed - ts->tv_sec * g_cpu_freq;
+  ts->tv_nsec = NSEC_PER_SEC * (uint64_t)left / g_cpu_freq;
 }

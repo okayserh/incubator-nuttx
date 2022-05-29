@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/ceva/src/common/up_interruptcontext.c
+ * libs/libc/stdlib/lib_cxa_atexit.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,22 +24,33 @@
 
 #include <nuttx/config.h>
 
-#include <nuttx/arch.h>
-
-#include "up_internal.h"
+#include <nuttx/atexit.h>
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_interrupt_context
+ * Name: __cxa_atexit
  *
- * Description: Return true is we are currently executing in
- * the interrupt handler context.
+ * Description:
+ *   __cxa_atexit() registers a destructor function to be called by exit().
+ *   On a call to exit(), the registered functions should be called with
+ *   the single argument 'arg'. Destructor functions shall always be
+ *   called in the reverse order to their registration (i.e. the most
+ *   recently registered function shall be called first),
+ *
+ *   If shared libraries were supported, the callbacks should be invoked
+ *   when the shared library is unloaded as well.
+ *
+ * Reference:
+ *   Linux base
+ *
  ****************************************************************************/
 
-bool up_interrupt_context(void)
+int __cxa_atexit(CODE void (*func)(FAR void *), FAR void *arg,
+                 FAR void *dso_handle)
 {
-  return CURRENT_REGS != NULL;
+  return atexit_register(ATTYPE_CXA, (CODE void (*)(void))func, arg,
+                         dso_handle);
 }

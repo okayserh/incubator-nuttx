@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/misoc/src/lm32/lm32_interruptcontext.c
+ * arch/risc-v/src/mpfs/mpfs_shead.S
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,23 +24,64 @@
 
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <nuttx/arch.h>
+#include <nuttx/irq.h>
 
-#include "lm32.h"
+#include "chip.h"
+#include "mpfs_memorymap.h"
+#include "riscv_internal.h"
 
 /****************************************************************************
- * Public Functions
+ * Public Symbols
  ****************************************************************************/
 
+  /* Imported symbols */
+
+  .extern __trap_vec
+
+  .section .text
+  .global __start
+
 /****************************************************************************
- * Name: up_interrupt_context
+ * Name: __start
  *
- * Description: Return true is we are currently executing in
- * the interrupt handler context.
+ * Description:
+ *   Supervisor mode start function.
+ *
+ * Input Parameters:
+ *    a0 - hartid
+ *
  ****************************************************************************/
 
-bool up_interrupt_context(void)
-{
-  return g_current_regs != NULL;
-}
+__start:
+
+  /* Disable all interrupts in sie */
+
+  csrw sie, zero
+  csrw sip, zero
+
+  /* Set the S-mode trap vector */
+
+  la   t0, __trap_vec
+  csrw stvec, t0
+
+  /* Clear sscratch */
+
+  csrw sscratch, zero
+  csrw scause, zero
+  csrw sepc, zero
+
+  /* initialize global pointer, global data */
+
+.option push
+.option norelax
+  la  gp, __global_pointer$
+.option pop
+
+  /* Make sure the writes to CSR stick before continuing */
+
+  fence
+
+  /* Set stack pointer and jump to start */
+
+  la sp, MPFS_IDLESTACK_TOP
+  j __mpfs_start

@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/x86/src/common/up_interruptcontext.c
+ * libs/libc/stdlib/lib_exit.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,34 +24,37 @@
 
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
+#include <nuttx/atexit.h>
+#include <nuttx/compiler.h>
 
-#include "up_internal.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 /****************************************************************************
- * Private Types
+ * Private Data
  ****************************************************************************/
 
 /****************************************************************************
- * Private Function Prototypes
+ * Public Data
  ****************************************************************************/
+
+extern FAR void *__dso_handle weak_data;
+FAR void *__dso_handle = &__dso_handle;
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
-/****************************************************************************
- * Name: up_interrupt_context
- *
- * Description:
- *   Return true is we are currently executing in the interrupt handler
- *   context.
- *
- ****************************************************************************/
-
-bool up_interrupt_context(void)
+void exit(int status)
 {
-  return g_current_regs != NULL;
+  atexit_call_exitfuncs(status);
+
+  /* REVISIT: Need to flush files and streams */
+
+  _exit(status);
+}
+
+void _Exit(int status)
+{
+  _exit(status);
 }

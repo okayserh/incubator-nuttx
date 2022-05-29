@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/hc/src/common/up_interruptcontext.c
+ * include/nuttx/atexit.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,39 +18,101 @@
  *
  ****************************************************************************/
 
+#ifndef __INCLUDE_NUTTX_ATEXIT_H
+#define __INCLUDE_NUTTX_ATEXIT_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
-
-#include <stdbool.h>
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
-
-#include "up_internal.h"
+#include <stdlib.h>
 
 /****************************************************************************
- * Private Types
+ * Pre-processor Definitions
  ****************************************************************************/
+
+/* Amount of exit functions */
+
+#define ATEXIT_MAX (CONFIG_LIBC_MAX_EXITFUNS)
 
 /****************************************************************************
- * Private Function Prototypes
+ * Public Types
  ****************************************************************************/
 
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: up_interrupt_context
- *
- * Description: Return true is we are currently executing in the interrupt
- * handler context.
- *
- ****************************************************************************/
-
-bool up_interrupt_context(void)
+enum atexit_type_e
 {
-  return g_current_regs != NULL;
+  ATTYPE_NONE,
+  ATTYPE_ATEXIT,
+  ATTYPE_ONEXIT,
+  ATTYPE_CXA
+};
+
+struct atexit_s
+{
+  int         type;
+  CODE void (*func)(void);
+  FAR void   *arg;
+};
+
+struct atexit_list_s
+{
+  int             nfuncs;
+  struct atexit_s funcs[ATEXIT_MAX];
+};
+
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+#if defined(__cplusplus)
+extern "C"
+{
+#endif
+
+#if CONFIG_LIBC_MAX_EXITFUNS > 0
+
+/****************************************************************************
+ * Name: atexit_register
+ *
+ * Description:
+ *   atexit_register registers a function function to be called by exit().
+ *
+ * Input Parameters:
+ *   type - Type of exit function. Available types in atexit_type_e.
+ *   func - Function to be called on exit.
+ *   arg  - Optional argument to be passed to function on exit.
+ *   dso  - Dso handle, called when shared library is unloaded.
+ *
+ * Returned value:
+ *   OK  on success; ERROR on failure
+ *
+ ****************************************************************************/
+
+int atexit_register(int type, CODE void (*func)(void), FAR void *arg,
+                    FAR void *dso);
+
+/****************************************************************************
+ * Name: atexit_call_exitfuncs
+ *
+ * Description:
+ *   Execute the registered exit functions. Call this in exit().
+ *
+ * Input Parameters:
+ *   status - Process exit status code.
+ *
+ * Returned value:
+ *   None
+ *
+ ****************************************************************************/
+
+void atexit_call_exitfuncs(int status);
+#else
+#  define atexit_register(type, func, arg, dso) (0)
+#  define atexit_call_exitfuncs(status)
+#endif /* CONFIG_LIBC_MAX_EXITFUNS */
+
+#if defined(__cplusplus)
 }
+#endif
+#endif /* __INCLUDE_NUTTX_ATEXIT_H */

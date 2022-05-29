@@ -802,6 +802,18 @@ void up_textheap_free(FAR void *p);
 #endif
 
 /****************************************************************************
+ * Name: up_textheap_heapmember
+ *
+ * Description:
+ *   Test if memory is from text heap.
+ *
+ ****************************************************************************/
+
+#if defined(CONFIG_ARCH_USE_TEXT_HEAP)
+bool up_textheap_heapmember(FAR void *p);
+#endif
+
+/****************************************************************************
  * Name: up_setpicbase and up_getpicbase
  *
  * Description:
@@ -1203,8 +1215,8 @@ int up_addrenv_detach(FAR struct task_group_s *group, FAR struct tcb_s *tcb);
  ****************************************************************************/
 
 #ifdef CONFIG_ARCH_ADDRENV
-int up_addrenv_mprot(group_addrenv_t *addrenv, uintptr_t addr, size_t len,
-                     int prot);
+int up_addrenv_mprot(FAR group_addrenv_t *addrenv, uintptr_t addr,
+                     size_t len, int prot);
 #endif
 
 /****************************************************************************
@@ -1436,17 +1448,6 @@ int up_shmdt(uintptr_t vaddr, unsigned int npages);
  ****************************************************************************/
 
 void up_irqinitialize(void);
-
-/****************************************************************************
- * Name: up_interrupt_context
- *
- * Description:
- *   Return true is we are currently executing in
- *   the interrupt handler context.
- *
- ****************************************************************************/
-
-bool up_interrupt_context(void);
 
 /****************************************************************************
  * Name: up_enable_irq
@@ -1937,28 +1938,6 @@ int8_t up_fetchadd8(FAR volatile int8_t *addr, int8_t value);
 int32_t up_fetchsub32(FAR volatile int32_t *addr, int32_t value);
 int16_t up_fetchsub16(FAR volatile int16_t *addr, int16_t value);
 int8_t up_fetchsub8(FAR volatile int8_t *addr, int8_t value);
-#endif
-
-/****************************************************************************
- * Name: up_cpu_index
- *
- * Description:
- *   Return an index in the range of 0 through (CONFIG_SMP_NCPUS-1) that
- *   corresponds to the currently executing CPU.
- *
- * Input Parameters:
- *   None
- *
- * Returned Value:
- *   An integer index in the range of 0 through (CONFIG_SMP_NCPUS-1) that
- *   corresponds to the currently executing CPU.
- *
- ****************************************************************************/
-
-#ifdef CONFIG_SMP
-int up_cpu_index(void);
-#else
-#  define up_cpu_index() (0)
 #endif
 
 /****************************************************************************

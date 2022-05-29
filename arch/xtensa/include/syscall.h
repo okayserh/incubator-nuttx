@@ -34,9 +34,6 @@
 #ifndef __ASSEMBLY__
 #  include <stdint.h>
 #endif
-#ifdef CONFIG_LIB_SYSCALL
-#  include <syscall.h>
-#endif
 
 #include <arch/xtensa/core.h>
 #include <arch/xtensa/xtensa_corebits.h>
@@ -398,7 +395,7 @@ static inline uintptr_t sys_call6(unsigned int nbr, uintptr_t parm1,
     "rsync\n"
     : "=r"(reg0)
     : "i"(XCHAL_SWINT_CALL), "r"(reg0), "r"(reg1), "r"(reg2),
-      "r"(reg3), "r"(reg4), "r"(reg5)
+      "r"(reg3), "r"(reg4), "r"(reg5), "r"(reg6)
     : "a9", "memory"
   );
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * libs/libc/stdlib/lib__Exit.c
+ * arch/xtensa/src/common/xtensa_fpucmp.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,14 +22,38 @@
  * Included Files
  ****************************************************************************/
 
-#include <stdlib.h>
-#include <unistd.h>
+#include <nuttx/config.h>
+
+#include <stdint.h>
+#include <string.h>
+#include <nuttx/irq.h>
+
+#include "xtensa.h"
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+#ifdef CONFIG_ARCH_FPU
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
-void _Exit(int status)
+/****************************************************************************
+ * Name: up_fpucmp
+ *
+ * Description:
+ *   compare FPU areas from thread context
+ *
+ ****************************************************************************/
+
+bool up_fpucmp(const void *saveregs1, const void *saveregs2)
 {
-  _exit(status);
+  const uint32_t *regs1 = saveregs1;
+  const uint32_t *regs2 = saveregs2;
+
+  return memcmp(&regs1[XCPTCONTEXT_REGS], &regs2[XCPTCONTEXT_REGS],
+                XTENSA_CP_SA_SIZE);
 }
+#endif /* CONFIG_ARCH_FPU */

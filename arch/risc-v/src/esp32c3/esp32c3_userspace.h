@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/sparc/src/common/up_interruptcontext.c
+ * arch/risc-v/src/esp32c3/esp32c3_userspace.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,38 +18,32 @@
  *
  ****************************************************************************/
 
+#ifndef __ARCH_RISCV_SRC_ESP32C3_ESP32C3_USERSPACE_H
+#define __ARCH_RISCV_SRC_ESP32C3_ESP32C3_USERSPACE_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <nuttx/arch.h>
-#include <nuttx/irq.h>
-
-#include "up_internal.h"
-
 /****************************************************************************
- * Private Types
+ * Public Functions Prototypes
  ****************************************************************************/
 
 /****************************************************************************
- * Private Function Prototypes
- ****************************************************************************/
-
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: up_interrupt_context
+ * Name: esp32c3_userspace
  *
- * Description: Return true is we are currently executing in
- * the interrupt handler context.
+ * Description:
+ *   For the case of the separate user-/kernel-space build, perform whatever
+ *   platform specific initialization of the user memory is required.
+ *   Normally this just means initializing the user space .data and .bss
+ *   segments.
+ *
  ****************************************************************************/
 
-bool up_interrupt_context(void)
-{
-  return g_current_regs != NULL;
-}
+#ifdef CONFIG_BUILD_PROTECTED
+void esp32c3_userspace(void);
+#endif
+
+#endif /* __ARCH_RISCV_SRC_ESP32C3_ESP32C3_USERSPACE_H */
